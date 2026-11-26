@@ -2,12 +2,14 @@ import {
   ChevronDown,
   ChevronUp,
   Disc3,
+  Loader2,
   Music2,
   Pause,
   Play,
   SkipBack,
   SkipForward,
   Volume2,
+  Youtube,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
@@ -17,6 +19,7 @@ import { formatAudioTime } from '../utils/blogLogic';
 interface PlaylistSectionProps {
   activeTrack: PlaylistTrack;
   isPlaying: boolean;
+  isBuffering?: boolean;
   currentTime: number;
   duration: number;
   levels: number[];
@@ -33,6 +36,7 @@ interface PlaylistSectionProps {
 export function PlaylistSection({
   activeTrack,
   isPlaying,
+  isBuffering = false,
   currentTime,
   duration,
   levels,
@@ -46,6 +50,7 @@ export function PlaylistSection({
   onVolumeChange,
 }: PlaylistSectionProps) {
   const [showSpotify, setShowSpotify] = useState(false);
+  const [showYoutube, setShowYoutube] = useState(false);
 
   const effectiveDuration =
     duration > 0 ? duration : activeTrack.durationSec;
@@ -234,15 +239,29 @@ export function PlaylistSection({
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.96 }}
                     onClick={onTogglePlay}
-                    aria-label={isPlaying ? 'Jeda musik' : 'Putar lagu penuh'}
+                    aria-label={
+                      isBuffering
+                        ? 'Sedang memuat lagu'
+                        : isPlaying
+                          ? 'Jeda musik'
+                          : 'Putar lagu penuh'
+                    }
                     className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#7AB3FF] px-5 py-2.5 text-sm font-semibold text-[#070B14] whitespace-nowrap shrink-0 shadow-[0_0_20px_rgba(122,179,255,0.22)] transition-colors hover:bg-[#9CC7FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
                   >
-                    {isPlaying ? (
+                    {isBuffering ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : isPlaying ? (
                       <Pause className="h-4 w-4" aria-hidden="true" />
                     ) : (
                       <Play className="h-4 w-4" aria-hidden="true" />
                     )}
-                    <span>{isPlaying ? 'Jeda Lagu' : 'Putar Lagu Penuh'}</span>
+                    <span>
+                      {isBuffering
+                        ? 'Memuat Audio...'
+                        : isPlaying
+                          ? 'Jeda Lagu'
+                          : 'Putar Lagu Penuh'}
+                    </span>
                   </motion.button>
 
                   <button
@@ -279,48 +298,98 @@ export function PlaylistSection({
                 </div>
               </div>
 
-              {activeTrack.spotifyTrackId && (
-                <div className="mt-5 border-t border-[#1E2B48] pt-4">
+              <div className="mt-5 border-t border-[#1E2B48] pt-4">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    aria-expanded={showSpotify}
-                    onClick={() => setShowSpotify((prev) => !prev)}
-                    className="inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-[#243456] bg-[#131E36] px-4 py-2 text-xs font-medium text-[#EEF3FC] transition-colors hover:border-[#7AB3FF]/50 hover:bg-[#1D2D4F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
+                    aria-expanded={showYoutube}
+                    onClick={() => {
+                      setShowYoutube((prev) => !prev);
+                      setShowSpotify(false);
+                    }}
+                    className={`inline-flex min-h-[40px] items-center gap-2 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
+                      showYoutube
+                        ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
+                        : 'border-[#243456] bg-[#131E36] text-[#EEF3FC] hover:border-[#7AB3FF]/50 hover:bg-[#1D2D4F]'
+                    }`}
                   >
-                    <Music2
+                    <Youtube
                       className="h-3.5 w-3.5 text-[#7AB3FF]"
                       aria-hidden="true"
                     />
-                    <span>Buka Pemutar Alternatif Spotify</span>
-                    {showSpotify ? (
-                      <ChevronUp
-                        className="h-3.5 w-3.5 text-[#94A3C8]"
-                        aria-hidden="true"
-                      />
+                    <span>Putar via YouTube</span>
+                    {showYoutube ? (
+                      <ChevronUp className="h-3.5 w-3.5 text-[#94A3C8]" aria-hidden="true" />
                     ) : (
-                      <ChevronDown
-                        className="h-3.5 w-3.5 text-[#94A3C8]"
-                        aria-hidden="true"
-                      />
+                      <ChevronDown className="h-3.5 w-3.5 text-[#94A3C8]" aria-hidden="true" />
                     )}
                   </button>
 
-                  {showSpotify && (
-                    <div className="mt-3 overflow-hidden rounded-xl border border-[#1E2B48] bg-[#070B14]">
-                      <iframe
-                        key={`spotify-${activeTrack.spotifyTrackId}`}
-                        src={`https://open.spotify.com/embed/track/${activeTrack.spotifyTrackId}?utm_source=generator&theme=0`}
-                        width="100%"
-                        height="152"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        loading="lazy"
-                        title={`Pemutar Spotify untuk ${activeTrack.title}`}
-                        className="border-0"
+                  {activeTrack.spotifyTrackId && (
+                    <button
+                      type="button"
+                      aria-expanded={showSpotify}
+                      onClick={() => {
+                        setShowSpotify((prev) => !prev);
+                        setShowYoutube(false);
+                      }}
+                      className={`inline-flex min-h-[40px] items-center gap-2 rounded-lg border px-3.5 py-2 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
+                        showSpotify
+                          ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
+                          : 'border-[#243456] bg-[#131E36] text-[#EEF3FC] hover:border-[#7AB3FF]/50 hover:bg-[#1D2D4F]'
+                      }`}
+                    >
+                      <Music2
+                        className="h-3.5 w-3.5 text-[#7AB3FF]"
+                        aria-hidden="true"
                       />
-                    </div>
+                      <span>Pemutar Spotify</span>
+                      {showSpotify ? (
+                        <ChevronUp
+                          className="h-3.5 w-3.5 text-[#94A3C8]"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <ChevronDown
+                          className="h-3.5 w-3.5 text-[#94A3C8]"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </button>
                   )}
                 </div>
-              )}
+
+                {showYoutube && (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-[#1E2B48] bg-[#070B14]">
+                    <div className="aspect-[16/9] w-full">
+                      <iframe
+                        key={`yt-audio-${activeTrack.youtubeId}`}
+                        src={`https://www.youtube.com/embed/${activeTrack.youtubeId}?rel=0`}
+                        title={`Pemutar YouTube untuk ${activeTrack.title}`}
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="h-full w-full border-0"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {showSpotify && activeTrack.spotifyTrackId && (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-[#1E2B48] bg-[#070B14]">
+                    <iframe
+                      key={`spotify-${activeTrack.spotifyTrackId}`}
+                      src={`https://open.spotify.com/embed/track/${activeTrack.spotifyTrackId}?utm_source=generator&theme=0`}
+                      width="100%"
+                      height="152"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      title={`Pemutar Spotify untuk ${activeTrack.title}`}
+                      className="border-0"
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="sr-only" aria-live="polite">
                 {isPlaying

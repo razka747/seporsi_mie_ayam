@@ -2,6 +2,7 @@ import type { PlaylistTrack } from '../data/filmContent';
 
 export interface AudioFrameState {
   isPlaying: boolean;
+  isBuffering: boolean;
   currentTime: number;
   duration: number;
   levels: number[];
@@ -11,8 +12,10 @@ export interface AudioFrameState {
 export class BlueMoonAudioEngine {
   private audio: HTMLAudioElement | null = null;
   private vizTimer: number | null = null;
+  private bufferTimeout: number | null = null;
   private currentTrack: PlaylistTrack;
   private isPlaying = false;
+  private isBuffering = false;
   private currentTime = 0;
   private duration: number;
   private volume = 0.85;
@@ -32,7 +35,8 @@ export class BlueMoonAudioEngine {
 
     if (typeof window !== 'undefined') {
       const audio = new Audio();
-      audio.preload = 'metadata';
+      // Pre-buffer active track immediately to eliminate startup delay on Play
+      audio.preload = 'auto';
       audio.volume = this.volume;
       audio.src = initialTrack.audioUrl;
 
@@ -42,10 +46,31 @@ export class BlueMoonAudioEngine {
       audio.addEventListener('ended', this.handleEnded);
       audio.addEventListener('pause', this.handlePauseEvent);
       audio.addEventListener('playing', this.handlePlayingEvent);
+      audio.addEventListener('canplay', this.handleCanPlay);
+      audio.addEventListener('waiting', this.handleWaiting);
       audio.addEventListener('error', this.handleError);
 
       this.audio = audio;
     }
+  }
+
+  private clearBufferTimeout(): void {
+    if (this.bufferTimeout !== null) {
+      window.clearTimeout(this.bufferTimeout);
+      this.bufferTimeout = null;
+    }
+  }
+
+  private startBufferTimeout(): void {
+    this.clearBufferTimeout();
+    this.bufferTimeout = window.setTimeout(() => {
+      if (this.isBuffering && !this.isPlaying) {
+        this.isBuffering = false;
+        this.errorMessage =
+          'Aliran audio sedang lambat dimuat. Kamu bisa menunggu sebentar atau gunakan pemutar YouTube / Spotify di bawah.';
+        this.emitState();
+      }
+    }, 12000);
   }
 
   private handleMetadata = (): void => {
@@ -65,22 +90,43 @@ export class BlueMoonAudioEngine {
     this.emitState();
   };
 
+  private handleCanPlay = (): void => {
+    if (this.isBuffering) {
+      this.isBuffering = false;
+      this.clearBufferTimeout();
+      this.emitState();
+    }
+  };
+
+  private handleWaiting = (): void => {
+    if (this.isPlaying) {
+      this.isBuffering = true;
+      this.emitState();
+    }
+  };
+
   private handlePlayingEvent = (): void => {
     this.isPlaying = true;
+    this.isBuffering = false;
     this.errorMessage = null;
+    this.clearBufferTimeout();
     this.startVizLoop();
     this.emitState();
   };
 
   private handlePauseEvent = (): void => {
     this.isPlaying = false;
+    this.isBuffering = false;
+    this.clearBufferTimeout();
     this.stopVizLoop();
     this.emitState();
   };
 
   private handleEnded = (): void => {
     this.isPlaying = false;
+    this.isBuffering = false;
     this.currentTime = 0;
+    this.clearBufferTimeout();
     this.stopVizLoop();
     this.emitState();
     this.onTrackEnd();
@@ -88,9 +134,11 @@ export class BlueMoonAudioEngine {
 
   private handleError = (): void => {
     this.isPlaying = false;
+    this.isBuffering = false;
+    this.clearBufferTimeout();
     this.stopVizLoop();
     this.errorMessage =
-      'Gagal memuat aliran audio penuh. Coba tekan putar kembali atau gunakan pemutar alternatif Spotify di bawah.';
+      'Gagal memuat aliran audio langsung. Silakan coba lagi atau gunakan pemutar alternatif YouTube / Spotify di bawah.';
     this.emitState();
   };
 
@@ -100,9 +148,12 @@ export class BlueMoonAudioEngine {
     this.currentTime = 0;
     this.duration = track.durationSec;
     this.errorMessage = null;
+    this.isBuffering = shouldPlay;
+    this.clearBufferTimeout();
 
     if (this.audio) {
       this.audio.pause();
+      this.audio.preload = 'auto';
       this.audio.src = track.audioUrl;
       this.audio.load();
     }
@@ -133,13 +184,18 @@ export class BlueMoonAudioEngine {
   public play(): void {
     if (!this.audio) return;
     this.errorMessage = null;
+    this.isBuffering = true;
     this.audio.volume = this.volume;
+    this.startBufferTimeout();
+    this.emitState();
 
     const playPromise = this.audio.play();
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
           this.isPlaying = true;
+          this.isBuffering = false;
+          this.clearBufferTimeout();
           this.startVizLoop();
           this.emitState();
         })
@@ -150,25 +206,29 @@ export class BlueMoonAudioEngine {
               : '';
           if (name === 'AbortError') return;
           this.isPlaying = false;
+          this.isBuffering = false;
+          this.clearBufferTimeout();
           this.stopVizLoop();
           this.errorMessage =
-            'Pemutaran audio memerlukan interaksi tombol putar secara langsung di peramban ini.';
+            'Pemutaran audio memerlukan interaksi langsung atau coba pemutar YouTube / Spotify di bawah.';
           this.emitState();
         });
     }
   }
 
   public pause(): void {
+    this.isPlaying = false;
+    this.isBuffering = false;
+    this.clearBufferTimeout();
     if (this.audio) {
       this.audio.pause();
     }
-    this.isPlaying = false;
     this.stopVizLoop();
     this.emitState();
   }
 
   public toggle(): void {
-    if (this.isPlaying) {
+    if (this.isPlaying || this.isBuffering) {
       this.pause();
     } else {
       this.play();
@@ -176,6 +236,7 @@ export class BlueMoonAudioEngine {
   }
 
   public destroy(): void {
+    this.clearBufferTimeout();
     this.stopVizLoop();
     if (this.audio) {
       this.audio.pause();
@@ -185,6 +246,8 @@ export class BlueMoonAudioEngine {
       this.audio.removeEventListener('ended', this.handleEnded);
       this.audio.removeEventListener('pause', this.handlePauseEvent);
       this.audio.removeEventListener('playing', this.handlePlayingEvent);
+      this.audio.removeEventListener('canplay', this.handleCanPlay);
+      this.audio.removeEventListener('waiting', this.handleWaiting);
       this.audio.removeEventListener('error', this.handleError);
       this.audio.src = '';
       this.audio = null;
@@ -230,6 +293,7 @@ export class BlueMoonAudioEngine {
 
     this.onUpdate({
       isPlaying: this.isPlaying,
+      isBuffering: this.isBuffering,
       currentTime: this.currentTime,
       duration: this.duration,
       levels,

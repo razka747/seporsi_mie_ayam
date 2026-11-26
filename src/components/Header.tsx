@@ -3,6 +3,7 @@ import {
   Clapperboard,
   Disc3,
   Image,
+  Loader2,
   Menu,
   MessageSquareHeart,
   Pause,
@@ -16,6 +17,7 @@ import { scrollToSection } from '../utils/scrollToSection';
 
 interface HeaderProps {
   isPlaying: boolean;
+  isBuffering?: boolean;
   onToggleAudio: () => void;
 }
 
@@ -28,7 +30,7 @@ const NAV_ITEMS = [
   { id: 'tim-pembuat', label: 'Tim', hint: '7 Kreator', Icon: Users },
 ];
 
-export function Header({ isPlaying, onToggleAudio }: HeaderProps) {
+export function Header({ isPlaying, isBuffering = false, onToggleAudio }: HeaderProps) {
   const [activeSection, setActiveSection] = useState<string>('beranda');
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -144,16 +146,18 @@ export function Header({ isPlaying, onToggleAudio }: HeaderProps) {
                 : 'border-[#7AB3FF]/40 bg-[#131E36] hover:bg-[#1D2D4F]'
             }`}
           >
-            {isPlaying ? (
+            {isBuffering ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-[#7AB3FF]" aria-hidden="true" />
+            ) : isPlaying ? (
               <Pause className="h-3.5 w-3.5 text-[#7AB3FF]" aria-hidden="true" />
             ) : (
               <Play className="h-3.5 w-3.5 text-[#7AB3FF]" aria-hidden="true" />
             )}
             <span className="hidden sm:inline">
-              {isPlaying ? 'Jeda Musik' : 'Putar Let Down'}
+              {isBuffering ? 'Memuat...' : isPlaying ? 'Jeda Musik' : 'Putar Let Down'}
             </span>
             <span className="sm:hidden">
-              {isPlaying ? 'Jeda' : 'Let Down'}
+              {isBuffering ? 'Memuat' : isPlaying ? 'Jeda' : 'Let Down'}
             </span>
             {isPlaying && (
               <span className="flex h-3 items-end gap-0.5" aria-hidden="true">

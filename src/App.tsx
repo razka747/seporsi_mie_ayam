@@ -14,6 +14,7 @@ import { BlueMoonAudioEngine } from './utils/blueMoonAudio';
 export default function App() {
   const [activeTrackIndex, setActiveTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(PLAYLIST_TRACKS[0].durationSec);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -33,6 +34,7 @@ export default function App() {
       PLAYLIST_TRACKS[0],
       (frame) => {
         setIsPlaying(frame.isPlaying);
+        setIsBuffering(frame.isBuffering);
         setCurrentTime(frame.currentTime);
         setDuration(frame.duration);
         setLevels(frame.levels);
@@ -98,7 +100,7 @@ export default function App() {
   };
 
   const handleHeaderToggleAudio = () => {
-    if (isPlaying) {
+    if (isPlaying || isBuffering) {
       engineRef.current?.pause();
     } else {
       handlePlayLetDown();
@@ -107,10 +109,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#070B14] text-[#EEF3FC]">
-      <Header isPlaying={isPlaying} onToggleAudio={handleHeaderToggleAudio} />
+      <Header
+        isPlaying={isPlaying}
+        isBuffering={isBuffering}
+        onToggleAudio={handleHeaderToggleAudio}
+      />
       <main>
         <HeroSection
           isPlaying={isPlaying && activeTrack.id === 'let-down'}
+          isBuffering={isBuffering && activeTrack.id === 'let-down'}
           onPlayLetDown={handlePlayLetDown}
         />
         <EssaySection />
@@ -119,6 +126,7 @@ export default function App() {
         <PlaylistSection
           activeTrack={activeTrack}
           isPlaying={isPlaying}
+          isBuffering={isBuffering}
           currentTime={currentTime}
           duration={duration}
           levels={levels}

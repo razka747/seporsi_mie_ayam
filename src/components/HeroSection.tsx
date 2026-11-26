@@ -1,4 +1,4 @@
-import { ArrowDown, Disc3, Play, Sparkles } from 'lucide-react';
+import { ArrowDown, Disc3, Loader2, Play, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { HERO_SLIDES } from '../data/filmContent';
@@ -6,6 +6,7 @@ import { scrollToSection } from '../utils/scrollToSection';
 
 interface HeroSectionProps {
   isPlaying: boolean;
+  isBuffering?: boolean;
   onPlayLetDown: () => void;
 }
 
@@ -18,7 +19,11 @@ const NIGHT_MOTES = [
   { left: '91%', top: '24%', size: 3, delay: 2.1, duration: 9.5 },
 ];
 
-export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
+export function HeroSection({
+  isPlaying,
+  isBuffering = false,
+  onPlayLetDown,
+}: HeroSectionProps) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [failedSlides, setFailedSlides] = useState<Record<string, boolean>>({});
@@ -149,15 +154,19 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
                 onClick={onPlayLetDown}
                 className="inline-flex min-h-[44px] w-full items-center justify-center gap-2.5 rounded-lg bg-[#7AB3FF] px-5 py-2.5 text-sm font-semibold text-[#070B14] whitespace-nowrap shrink-0 shadow-[0_0_24px_rgba(122,179,255,0.28)] transition-colors hover:bg-[#9CC7FF] sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
               >
-                {isPlaying ? (
+                {isBuffering ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : isPlaying ? (
                   <Disc3 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 ) : (
                   <Play className="h-4 w-4" aria-hidden="true" />
                 )}
                 <span>
-                  {isPlaying
-                    ? 'Sedang Memutar: Let Down'
-                    : 'Putar Let Down — Radiohead'}
+                  {isBuffering
+                    ? 'Memuat Let Down...'
+                    : isPlaying
+                      ? 'Sedang Memutar: Let Down'
+                      : 'Putar Let Down — Radiohead'}
                 </span>
               </motion.button>
 
