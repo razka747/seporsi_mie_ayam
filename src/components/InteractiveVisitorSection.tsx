@@ -294,7 +294,7 @@ export function InteractiveVisitorSection() {
               <p className="flex items-center gap-1.5 text-[11px] text-[#94A3C8]">
                 <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#7AB3FF]" aria-hidden="true" />
                 <span>
-                  Perlindungan otomatis aktif: komentar 18+, rasis, atau SARA akan otomatis dihapus.
+                  Perlindungan otomatis aktif: komentar 18+, kata kasar, rasis, atau SARA akan otomatis dihapus.
                 </span>
               </p>
 

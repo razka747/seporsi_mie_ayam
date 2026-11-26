@@ -126,6 +126,7 @@ test('detectBlockedContent and filterCleanVisitorNotes block and remove 18+, rac
   assert.equal(detectBlockedContent('Film ini sangat menyentuh hati.'), null);
   assert.equal(detectBlockedContent('Link b0k3p 18+ di sini'), '18+');
   assert.equal(detectBlockedContent('Dasar rasis dan menghina sara'), 'rasis-sara');
+  assert.equal(detectBlockedContent('dasar bajingan'), 'kasar');
 
   const adultSubmit = validateVisitorNote({
     author: 'Anonim',

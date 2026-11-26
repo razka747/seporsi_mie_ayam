@@ -63,12 +63,12 @@ export function filterPhotosByScene(
   return photos.filter((photo) => photo.category === category);
 }
 
-export type ModerationViolation = '18+' | 'rasis-sara';
+export type ModerationViolation = '18+' | 'rasis-sara' | 'kasar';
 
 const ADULT_18_PATTERNS: RegExp[] = [
   /\b18\+\b/i,
   /\b(bokep|porno|porn|pornografi|nsfw|xxx|hentai|jav|onlyfans|vcs|open\s*bo)\b/i,
-  /\b(ngentot|ngewe|memek|kontol|pepek|coli|colmek|masturbasi|mesum|cabul|bugil|telanjang|toket|tetek|pelacur|lonte|psk|perek|gigolo)\b/i,
+  /\b(ngentot|ngentod|ngewe|memek|kontol|pepek|coli|colmek|masturbasi|mesum|cabul|bugil|telanjang|toket|tetek|pelacur|lonte|psk|perek|gigolo|jembut|titit|peler|pelir|itil|boobs|dick|pussy|slut|whore)\b/i,
   /\b(sex|seks)\b/i,
 ];
 
@@ -76,6 +76,10 @@ const RACIST_SARA_PATTERNS: RegExp[] = [
   /\b(rasis|rasisme|sara|penistaan|hina\s*agama)\b/i,
   /\b(nigger|nigga|chink|negro|kafir|murtad|aseng|antek|kadrun|cebong|kampret|pribumi\s*asli|non\s*pribumi)\b/i,
   /\b(cina\s*(bangsat|anjing|babi|kafir|tolol)|dasar\s*(cina|jawa|sunda|batak|papua|arab|yahudi|kafir))\b/i,
+];
+
+const PROFANITY_PATTERNS: RegExp[] = [
+  /\b(bajingan|bangsat|anjing|anjir|anjay|asu|jancok|jancuk|jancok|dancok|kimak|pukimak|pantek|sundal|goblok|tolol|bego|pekok|idiot|brengsek|keparat|taik|tai|monyet|babi|sialan|fuck|shit|bitch|asshole|bastard)\b/i,
 ];
 
 function normalizeForModeration(raw: string): string {
@@ -105,6 +109,12 @@ export function detectBlockedContent(text: string): ModerationViolation | null {
   for (const pattern of RACIST_SARA_PATTERNS) {
     if (pattern.test(rawLower) || pattern.test(normalized)) {
       return 'rasis-sara';
+    }
+  }
+
+  for (const pattern of PROFANITY_PATTERNS) {
+    if (pattern.test(rawLower) || pattern.test(normalized)) {
+      return 'kasar';
     }
   }
 
@@ -152,6 +162,9 @@ export function validateVisitorNote(input: NoteInput): NoteValidationResult {
     } else if (violation === 'rasis-sara') {
       errors.message =
         'Komentar terdeteksi mengandung unsur rasis atau SARA dan otomatis dihapus oleh sistem perlindungan.';
+    } else if (violation === 'kasar') {
+      errors.message =
+        'Komentar terdeteksi mengandung kata kasar/umpatan dan otomatis dihapus oleh sistem perlindungan.';
     }
   }
 
