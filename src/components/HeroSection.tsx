@@ -40,7 +40,7 @@ export function HeroSection({
 
     const timer = window.setInterval(() => {
       setSlideIdx((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 5500);
+    }, 2500);
 
     return () => window.clearInterval(timer);
   }, [isPaused]);
@@ -210,10 +210,10 @@ export function HeroSection({
                         [activeSlide.id]: true,
                       }))
                     }
-                    initial={{ opacity: 0, scale: 1.06 }}
+                    initial={{ opacity: 0, scale: 1.04 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                    transition={{ duration: 0.45, ease: 'easeOut' }}
                     className={`h-full w-full object-cover ${activeSlide.objectPosition}`}
                   />
                 ) : (
