@@ -378,7 +378,7 @@ export function LivingVideoSection() {
             transition={{ duration: 0.25 }}
             className="mt-8"
           >
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               {OFFICIAL_FILM_VIDEOS.map((video) => {
                 const selected = video.id === activeVideo.id;
                 return (
@@ -386,7 +386,7 @@ export function LivingVideoSection() {
                     key={video.id}
                     type="button"
                     onClick={() => setActiveVideoId(video.id)}
-                    className={`min-h-[40px] rounded-lg border px-3.5 py-2 text-xs font-medium whitespace-nowrap shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
+                    className={`min-h-[40px] truncate rounded-lg border px-2.5 py-2 text-center text-[11px] font-medium transition-colors sm:px-3.5 sm:text-xs sm:whitespace-nowrap sm:shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
                       selected
                         ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
                         : 'border-[#1E2B48] bg-[#0D1526] text-[#94A3C8] hover:text-[#EEF3FC]'
@@ -437,7 +437,7 @@ export function LivingVideoSection() {
             transition={{ duration: 0.25 }}
             className="mt-8"
           >
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
               {LIVING_SCENES.map((item) => {
                 const active = item.id === scene.id;
                 return (
@@ -445,7 +445,7 @@ export function LivingVideoSection() {
                     key={item.id}
                     type="button"
                     onClick={() => handleSelectScene(item.id)}
-                    className={`min-h-[40px] rounded-lg border px-3.5 py-2 text-xs font-medium whitespace-nowrap shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
+                    className={`min-h-[40px] truncate rounded-lg border px-2.5 py-2 text-center text-[11px] font-medium transition-colors sm:px-3.5 sm:text-xs sm:whitespace-nowrap sm:shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
                       active
                         ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
                         : 'border-[#1E2B48] bg-[#0D1526] text-[#94A3C8] hover:text-[#EEF3FC]'
