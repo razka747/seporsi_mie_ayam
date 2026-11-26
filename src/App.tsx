@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { AuthModal } from './components/AuthModal';
 import { EssaySection } from './components/EssaySection';
 import { Footer } from './components/Footer';
 import { GallerySection } from './components/GallerySection';
@@ -9,6 +10,11 @@ import { LivingVideoSection } from './components/LivingVideoSection';
 import { PlaylistSection } from './components/PlaylistSection';
 import { TeamSection } from './components/TeamSection';
 import { PLAYLIST_TRACKS } from './data/filmContent';
+import {
+  getCurrentSession,
+  logoutUser,
+  type AuthUser,
+} from './utils/authLogic';
 import { BlueMoonAudioEngine } from './utils/blueMoonAudio';
 
 export default function App() {
@@ -22,6 +28,11 @@ export default function App() {
   const [levels, setLevels] = useState<number[]>(() =>
     Array.from({ length: 24 }, (_, idx) => 0.16 + (idx % 3) * 0.05),
   );
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() =>
+    getCurrentSession(),
+  );
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
 
   const engineRef = useRef<BlueMoonAudioEngine | null>(null);
   const activeTrackIndexRef = useRef(activeTrackIndex);
@@ -107,12 +118,25 @@ export default function App() {
     }
   };
 
+  const handleOpenAuth = (mode: 'login' | 'register' = 'login') => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    setCurrentUser(null);
+  };
+
   return (
     <div className="min-h-screen overflow-x-clip bg-[#070B14] text-[#EEF3FC]">
       <Header
         isPlaying={isPlaying}
         isBuffering={isBuffering}
         onToggleAudio={handleHeaderToggleAudio}
+        currentUser={currentUser}
+        onOpenAuth={handleOpenAuth}
+        onLogout={handleLogout}
       />
       <main>
         <HeroSection
@@ -139,10 +163,16 @@ export default function App() {
           onSeek={handleSeek}
           onVolumeChange={handleVolumeChange}
         />
-        <InteractiveVisitorSection />
+        <InteractiveVisitorSection currentUser={currentUser} />
         <TeamSection />
       </main>
       <Footer />
+      <AuthModal
+        isOpen={authModalOpen}
+        initialMode={authModalMode}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={(user) => setCurrentUser(user)}
+      />
     </div>
   );
 }

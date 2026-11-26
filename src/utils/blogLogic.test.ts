@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { loginUser, registerUser } from './authLogic';
 import {
   addVisitorNote,
   calculatePollPercentages,
@@ -167,4 +168,26 @@ test('detectBlockedContent and filterCleanVisitorNotes block and remove 18+, rac
   assert.equal(cleaned.removedCount, 2);
   assert.equal(cleaned.cleanNotes.length, 1);
   assert.equal(cleaned.cleanNotes[0].id, 'clean-1');
+});
+
+test('loginUser authenticates admin credentials and registerUser validates member accounts', () => {
+  const wrongAdmin = loginUser('razkaps0809@gmail.com', 'salah');
+  assert.equal(wrongAdmin.ok, false);
+
+  const okAdmin = loginUser('razkaps0809@gmail.com', 'Razka311');
+  assert.equal(okAdmin.ok, true);
+  if (okAdmin.ok) {
+    assert.equal(okAdmin.user.role, 'admin');
+    assert.equal(okAdmin.user.email, 'razkaps0809@gmail.com');
+  }
+
+  const adminReg = registerUser('Fake', 'razkaps0809@gmail.com', 'Password123');
+  assert.equal(adminReg.ok, false);
+
+  const okMember = registerUser('Nadia Kirana', 'nadia@example.com', 'rahasia123');
+  assert.equal(okMember.ok, true);
+  if (okMember.ok) {
+    assert.equal(okMember.user.role, 'member');
+    assert.equal(okMember.user.name, 'Nadia Kirana');
+  }
 });

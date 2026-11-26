@@ -4,21 +4,29 @@ import {
   Disc3,
   Image,
   Loader2,
+  LogIn,
+  LogOut,
   Menu,
   MessageSquareHeart,
   Pause,
   Play,
+  Shield,
+  UserPlus,
   Users,
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion, useScroll, useSpring } from 'motion/react';
 import { useEffect, useState, type MouseEvent } from 'react';
+import type { AuthUser } from '../utils/authLogic';
 import { scrollToSection } from '../utils/scrollToSection';
 
 interface HeaderProps {
   isPlaying: boolean;
   isBuffering?: boolean;
   onToggleAudio: () => void;
+  currentUser: AuthUser | null;
+  onOpenAuth: (mode?: 'login' | 'register') => void;
+  onLogout: () => void;
 }
 
 const NAV_ITEMS = [
@@ -30,7 +38,14 @@ const NAV_ITEMS = [
   { id: 'tim-pembuat', label: 'Tim', hint: '7 Kreator', Icon: Users },
 ];
 
-export function Header({ isPlaying, isBuffering = false, onToggleAudio }: HeaderProps) {
+export function Header({
+  isPlaying,
+  isBuffering = false,
+  onToggleAudio,
+  currentUser,
+  onOpenAuth,
+  onLogout,
+}: HeaderProps) {
   const [activeSection, setActiveSection] = useState<string>('beranda');
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -178,6 +193,45 @@ export function Header({ isPlaying, isBuffering = false, onToggleAudio }: Header
             )}
           </motion.button>
 
+          {/* Desktop Auth Controls */}
+          {currentUser ? (
+            <div className="hidden md:flex items-center gap-2 rounded-lg border border-[#1E2B48] bg-[#0D1526] px-2.5 py-1.5">
+              <span
+                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase ${
+                  currentUser.role === 'admin'
+                    ? 'bg-[#E5A95E]/20 text-[#E5A95E]'
+                    : 'bg-[#7AB3FF]/15 text-[#7AB3FF]'
+                }`}
+              >
+                {currentUser.role === 'admin' && (
+                  <Shield className="h-2.5 w-2.5" aria-hidden="true" />
+                )}
+                {currentUser.role}
+              </span>
+              <span className="max-w-[96px] truncate text-xs font-medium text-[#EEF3FC]">
+                {currentUser.name}
+              </span>
+              <button
+                type="button"
+                onClick={onLogout}
+                aria-label="Keluar dari akun"
+                title="Keluar"
+                className="inline-flex h-6 w-6 items-center justify-center rounded text-[#94A3C8] transition-colors hover:bg-[#1D2D4F] hover:text-[#EEF3FC]"
+              >
+                <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onOpenAuth('login')}
+              className="hidden md:inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#243456] bg-[#0D1526] px-3.5 py-2 text-xs font-semibold text-[#EEF3FC] whitespace-nowrap shrink-0 transition-colors hover:border-[#7AB3FF]/60 hover:bg-[#131E36]"
+            >
+              <LogIn className="h-3.5 w-3.5 text-[#7AB3FF]" aria-hidden="true" />
+              <span>Masuk</span>
+            </button>
+          )}
+
           <motion.button
             type="button"
             whileTap={{ scale: 0.94 }}
@@ -249,6 +303,67 @@ export function Header({ isPlaying, isBuffering = false, onToggleAudio }: Header
                     </a>
                   );
                 })}
+              </div>
+
+              {/* Mobile Auth Bar */}
+              <div className="mt-3 border-t border-[#1E2B48] pt-3">
+                {currentUser ? (
+                  <div className="flex items-center justify-between gap-2 rounded-xl border border-[#1E2B48] bg-[#0D1526] px-3 py-2.5">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        className={`inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase ${
+                          currentUser.role === 'admin'
+                            ? 'bg-[#E5A95E]/20 text-[#E5A95E]'
+                            : 'bg-[#7AB3FF]/15 text-[#7AB3FF]'
+                        }`}
+                      >
+                        {currentUser.role === 'admin' && (
+                          <Shield className="h-2.5 w-2.5" aria-hidden="true" />
+                        )}
+                        {currentUser.role}
+                      </span>
+                      <span className="truncate text-xs font-semibold text-[#EEF3FC]">
+                        {currentUser.name}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        onLogout();
+                      }}
+                      className="inline-flex min-h-[34px] shrink-0 items-center gap-1.5 rounded-lg border border-[#243456] bg-[#131E36] px-3 py-1.5 text-xs font-medium text-[#EEF3FC]"
+                    >
+                      <LogOut className="h-3.5 w-3.5 text-[#94A3C8]" aria-hidden="true" />
+                      <span>Keluar</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        onOpenAuth('login');
+                      }}
+                      className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl border border-[#243456] bg-[#0D1526] px-3 py-2 text-xs font-semibold text-[#EEF3FC]"
+                    >
+                      <LogIn className="h-3.5 w-3.5 text-[#7AB3FF]" aria-hidden="true" />
+                      <span>Masuk</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        onOpenAuth('register');
+                      }}
+                      className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-[#7AB3FF] px-3 py-2 text-xs font-semibold text-[#070B14]"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>Registrasi</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </motion.nav>

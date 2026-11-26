@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, ChevronRight, Heart, Send, ShieldCheck } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Heart, Send, Shield, ShieldCheck, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
@@ -6,6 +6,7 @@ import {
   INITIAL_SCENE_POLL,
   INITIAL_VISITOR_NOTES,
 } from '../data/filmContent';
+import type { AuthUser } from '../utils/authLogic';
 import {
   addVisitorNote,
   calculatePollPercentages,
@@ -44,7 +45,13 @@ function loadJson<T>(key: string, fallback: T): T {
   }
 }
 
-export function InteractiveVisitorSection() {
+interface InteractiveVisitorSectionProps {
+  currentUser?: AuthUser | null;
+}
+
+export function InteractiveVisitorSection({
+  currentUser = null,
+}: InteractiveVisitorSectionProps) {
   const [notes, setNotes] = useState<VisitorNote[]>(() => {
     const loaded = loadJson(NOTES_STORAGE_KEY, INITIAL_VISITOR_NOTES);
     return filterCleanVisitorNotes(loaded).cleanNotes;
@@ -53,12 +60,19 @@ export function InteractiveVisitorSection() {
     loadJson(LIKES_STORAGE_KEY, []),
   );
 
-  const [author, setAuthor] = useState('');
+  const [author, setAuthor] = useState(() => currentUser?.name ?? '');
   const [mood, setMood] = useState<NoteMood>('Hangat · Kaldu Ayam');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState<{ author?: string; message?: string }>({});
   const [submitNotice, setSubmitNotice] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const isAdmin = currentUser?.role === 'admin';
+
+  useEffect(() => {
+    if (currentUser?.name) {
+      setAuthor(currentUser.name);
+    }
+  }, [currentUser]);
 
   // Interactive Polls state
   const [scenePoll, setScenePoll] = useState<PollOption[]>(() =>
@@ -136,6 +150,12 @@ export function InteractiveVisitorSection() {
     const result = toggleNoteHeart(notes, noteId, likedIds);
     setNotes(result.notes);
     setLikedIds(result.likedIds);
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    if (!isAdmin) return;
+    setNotes((prev) => prev.filter((item) => item.id !== noteId));
+    setLikedIds((prev) => prev.filter((id) => id !== noteId));
   };
 
   const handleVoteScene = (optionId: string) => {
@@ -313,9 +333,17 @@ export function InteractiveVisitorSection() {
           {/* Visitor Notes Wall */}
           <div className="lg:col-span-7">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1E2B48] pb-4">
-              <h3 className="font-editorial text-2xl font-semibold text-[#EEF3FC]">
-                Dinding Catatan Penonton
-              </h3>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h3 className="font-editorial text-2xl font-semibold text-[#EEF3FC]">
+                  Dinding Catatan Penonton
+                </h3>
+                {isAdmin && (
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[#E5A95E]/50 bg-[#E5A95E]/15 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#E5A95E]">
+                    <Shield className="h-3 w-3" aria-hidden="true" />
+                    <span>MODE ADMIN</span>
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2.5 font-mono text-xs text-[#94A3C8] tabular-nums">
                 {totalSlides > 1 && (
                   <span className="rounded-md border border-[#1E2B48] bg-[#0D1526] px-2 py-0.5 text-[#7AB3FF]">
@@ -358,26 +386,41 @@ export function InteractiveVisitorSection() {
                           <span>{note.createdAt}</span>
                         </div>
 
-                        <motion.button
-                          type="button"
-                          whileTap={{ scale: 0.86 }}
-                          onClick={() => handleHeartToggle(note.id)}
-                          aria-pressed={isLiked}
-                          aria-label={`Sukai catatan dari ${note.author}`}
-                          className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
-                            isLiked
-                              ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
-                              : 'border-[#1E2B48] bg-[#070B14] text-[#94A3C8] hover:text-[#EEF3FC]'
-                          }`}
-                        >
-                          <Heart
-                            className={`h-3.5 w-3.5 transition-transform ${
-                              isLiked ? 'scale-110 fill-[#7AB3FF] text-[#7AB3FF]' : ''
+                        <div className="flex items-center gap-1.5">
+                          <motion.button
+                            type="button"
+                            whileTap={{ scale: 0.86 }}
+                            onClick={() => handleHeartToggle(note.id)}
+                            aria-pressed={isLiked}
+                            aria-label={`Sukai catatan dari ${note.author}`}
+                            className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
+                              isLiked
+                                ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
+                                : 'border-[#1E2B48] bg-[#070B14] text-[#94A3C8] hover:text-[#EEF3FC]'
                             }`}
-                            aria-hidden="true"
-                          />
-                          <span>{note.hearts}</span>
-                        </motion.button>
+                          >
+                            <Heart
+                              className={`h-3.5 w-3.5 transition-transform ${
+                                isLiked ? 'scale-110 fill-[#7AB3FF] text-[#7AB3FF]' : ''
+                              }`}
+                              aria-hidden="true"
+                            />
+                            <span>{note.hearts}</span>
+                          </motion.button>
+
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteNote(note.id)}
+                              aria-label={`Hapus catatan dari ${note.author}`}
+                              title="Hapus komentar (Admin)"
+                              className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-[#E5A95E]/40 bg-[#1A1510] px-2.5 py-1 text-xs font-medium text-[#F5D3A1] transition-colors hover:border-[#E5A95E] hover:bg-[#2A2016]"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span className="hidden sm:inline">Hapus</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <p className="mt-3 text-sm leading-relaxed text-[#C5D2EA]">
