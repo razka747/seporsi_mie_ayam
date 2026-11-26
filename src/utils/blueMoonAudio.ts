@@ -35,10 +35,11 @@ export class BlueMoonAudioEngine {
 
     if (typeof window !== 'undefined') {
       const audio = new Audio();
-      // Pre-buffer active track immediately to eliminate startup delay on Play
-      audio.preload = 'auto';
+      // Lazy-load: don't preload src at init to avoid blocking playlist page
+      // load. Audio is fetched only when user first clicks Play.
+      audio.preload = 'none';
       audio.volume = this.volume;
-      audio.src = initialTrack.audioUrl;
+      // Do NOT set audio.src here — deferred until play() is called.
 
       audio.addEventListener('loadedmetadata', this.handleMetadata);
       audio.addEventListener('durationchange', this.handleMetadata);
@@ -52,6 +53,19 @@ export class BlueMoonAudioEngine {
 
       this.audio = audio;
     }
+  }
+
+  /** Whether the audio element already has a src assigned. */
+  private get isSrcLoaded(): boolean {
+    return !!this.audio?.src && this.audio.src !== window.location.href;
+  }
+
+  /** Assign src and trigger load if not yet done. */
+  private ensureSrcLoaded(): void {
+    if (!this.audio || this.isSrcLoaded) return;
+    this.audio.preload = 'auto';
+    this.audio.src = this.currentTrack.audioUrl;
+    this.audio.load();
   }
 
   private clearBufferTimeout(): void {
@@ -153,9 +167,17 @@ export class BlueMoonAudioEngine {
 
     if (this.audio) {
       this.audio.pause();
-      this.audio.preload = 'auto';
-      this.audio.src = track.audioUrl;
-      this.audio.load();
+      // If we're going to play, load now. Otherwise lazy-reset.
+      if (shouldPlay) {
+        this.audio.preload = 'auto';
+        this.audio.src = track.audioUrl;
+        this.audio.load();
+      } else {
+        // Reset src so next play() triggers fresh load for this track.
+        this.audio.preload = 'none';
+        this.audio.removeAttribute('src');
+        this.audio.load();
+      }
     }
 
     this.emitState();
@@ -186,6 +208,8 @@ export class BlueMoonAudioEngine {
     this.errorMessage = null;
     this.isBuffering = true;
     this.audio.volume = this.volume;
+    // Load src lazily on first Play click if not yet assigned.
+    this.ensureSrcLoaded();
     this.startBufferTimeout();
     this.emitState();
 

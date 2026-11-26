@@ -49,7 +49,7 @@ export function PlaylistSection({
   onSeek,
   onVolumeChange,
 }: PlaylistSectionProps) {
-  const [showSpotify, setShowSpotify] = useState(false);
+  const [showSpotify, setShowSpotify] = useState(true);
   const [showYoutube, setShowYoutube] = useState(false);
 
   const effectiveDuration =
@@ -197,6 +197,13 @@ export function PlaylistSection({
                 className="mt-4 rounded-lg border border-[#E5A95E]/40 bg-[#1A1510] px-3.5 py-2.5 text-xs text-[#F5D3A1]"
               >
                 {audioError}
+              </p>
+            )}
+
+            {!isPlaying && !isBuffering && !audioError && (
+              <p className="mt-3 text-[11px] leading-relaxed text-[#5A6E99]">
+                💡 Gunakan Pemutar Spotify di bawah untuk musik tanpa jeda loading.
+                Pemutar asli tersedia tetapi memerlukan beberapa detik untuk mulai.
               </p>
             )}
 
