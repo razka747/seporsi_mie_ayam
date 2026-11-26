@@ -85,7 +85,55 @@ export interface TeamMember {
   contribution: string;
 }
 
+export interface HeroSlide {
+  id: string;
+  imageUrl: string;
+  alt: string;
+  objectPosition: string;
+  tag: string;
+  quote: string;
+}
+
 export const HERO_IMAGE_URL = assetUrl('film/ale_gerobak_biru.jpg');
+
+export const HERO_SLIDES: HeroSlide[] = [
+  {
+    id: 'slide-gerobak',
+    imageUrl: assetUrl('film/ale_gerobak_biru.jpg'),
+    alt: 'Benidictus Siregar sebagai Ale berdiri di samping gerobak mie ayam biru dalam cuplikan film Seporsi Mie Ayam Sebelum Mati',
+    objectPosition: 'object-[50%_28%]',
+    tag: 'ADEGAN FILM · GEROBAK MIE AYAM BIRU',
+    quote:
+      '“Di hari ulang tahunku yang ke-37, aku hanya ingin makan seporsi mie ayam favoritku sebelum semuanya selesai.”',
+  },
+  {
+    id: 'slide-ultah',
+    imageUrl: assetUrl('film/ale_ulang_tahun.jpg'),
+    alt: 'Ale merayakan ulang tahun ke-37 sendirian di kamar kos dengan topi pesta kertas',
+    objectPosition: 'object-[50%_22%]',
+    tag: 'TEASER RESMI · MALAM ULANG TAHUN KE-37',
+    quote:
+      '“Kadang semesta menunda kehancuran kita hanya dengan satu hal sepele: warung mie ayam langganan yang tutup.”',
+  },
+  {
+    id: 'slide-murad',
+    imageUrl: assetUrl('film/ale_dan_murad.jpg'),
+    alt: 'Pertemuan Ale dan Murad di tengah perjalanan mencari warung mie ayam',
+    objectPosition: 'object-[50%_24%]',
+    tag: 'ADEGAN FILM · PERTEMUAN ALE & MURAD',
+    quote:
+      '“Untuk pertama kalinya malam itu, Ale merasa didengar tanpa sedikit pun dihakimi.”',
+  },
+  {
+    id: 'slide-ibu',
+    imageUrl: assetUrl('film/ale_dan_ibu.jpg'),
+    alt: 'Pelukan erat Dewi Irawan sebagai Ibu kepada Ale dalam Official Trailer',
+    objectPosition: 'object-[50%_20%]',
+    tag: 'OFFICIAL TRAILER · PELUKAN SANG IBU',
+    quote:
+      '“Hidup tidak tiba-tiba menjadi mudah. Ia hanya terasa cukup layak untuk dicoba lagi esok pagi.”',
+  },
+];
 
 export const OFFICIAL_FILM_VIDEOS: OfficialFilmVideo[] = [
   {

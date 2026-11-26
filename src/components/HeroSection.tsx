@@ -1,19 +1,13 @@
 import { ArrowDown, Disc3, Play, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
-import { HERO_IMAGE_URL } from '../data/filmContent';
+import { useEffect, useState } from 'react';
+import { HERO_SLIDES } from '../data/filmContent';
 import { scrollToSection } from '../utils/scrollToSection';
 
 interface HeroSectionProps {
   isPlaying: boolean;
   onPlayLetDown: () => void;
 }
-
-const HERO_QUOTES = [
-  '“Di hari ulang tahunku yang ke-37, aku hanya ingin makan seporsi mie ayam favoritku sebelum semuanya selesai.”',
-  '“Kadang semesta menunda kehancuran kita hanya dengan satu hal sepele: warung mie ayam langganan yang tutup.”',
-  '“Hidup tidak tiba-tiba menjadi mudah. Ia hanya terasa cukup layak untuk dicoba lagi esok pagi.”',
-];
 
 const NIGHT_MOTES = [
   { left: '8%', top: '18%', size: 4, delay: 0, duration: 7 },
@@ -25,11 +19,29 @@ const NIGHT_MOTES = [
 ];
 
 export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
-  const [imgError, setImgError] = useState(false);
-  const [quoteIdx, setQuoteIdx] = useState(0);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [failedSlides, setFailedSlides] = useState<Record<string, boolean>>({});
 
-  const cycleQuote = () => {
-    setQuoteIdx((prev) => (prev + 1) % HERO_QUOTES.length);
+  const activeSlide = HERO_SLIDES[slideIdx] ?? HERO_SLIDES[0];
+  const imgError = Boolean(failedSlides[activeSlide.id]);
+
+  useEffect(() => {
+    if (isPaused) return;
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    const timer = window.setInterval(() => {
+      setSlideIdx((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5500);
+
+    return () => window.clearInterval(timer);
+  }, [isPaused]);
+
+  const cycleSlide = () => {
+    setSlideIdx((prev) => (prev + 1) % HERO_SLIDES.length);
   };
 
   return (
@@ -49,7 +61,12 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
         />
         <motion.div
           animate={{ opacity: [0.18, 0.32, 0.18], scale: [1, 1.08, 1] }}
-          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+          transition={{
+            duration: 11,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: 2,
+          }}
           className="absolute right-10 bottom-12 h-[300px] w-[300px] rounded-full bg-[#E5A95E]/10 blur-[110px]"
         />
         {NIGHT_MOTES.map((mote, i) => (
@@ -77,7 +94,7 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
       </div>
 
       <div className="relative mx-auto max-w-[1200px] px-4 pt-8 pb-10 sm:px-6 lg:pt-16 lg:pb-14">
-        <div className="grid grid-cols-1 items-stretch gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12 lg:gap-12">
           <div className="flex flex-col justify-between lg:col-span-6">
             <div>
               <motion.div
@@ -97,7 +114,7 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.08 }}
-                className="font-editorial mt-5 text-[clamp(2.5rem,4.4vw,4rem)] font-semibold leading-[1.06] tracking-tight text-[#EEF3FC]"
+                className="font-editorial mt-4 text-[clamp(2.35rem,4.4vw,4rem)] font-semibold leading-[1.06] tracking-tight text-[#EEF3FC] sm:mt-5"
                 style={{ textWrap: 'balance' }}
               >
                 Seporsi Mie Ayam Sebelum Mati
@@ -107,7 +124,7 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.16 }}
-                className="mt-6 max-w-xl text-base leading-relaxed text-[#B6C4E0]"
+                className="mt-4 max-w-xl text-sm leading-relaxed text-[#B6C4E0] sm:mt-6 sm:text-base"
               >
                 Jurnal visual film arahan Kuntz Agus yang dibintangi Benidictus
                 Siregar sebagai Ale—pria 37 tahun yang menunda niatnya mengakhiri
@@ -166,54 +183,103 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
             transition={{ duration: 0.65, delay: 0.14 }}
             className="lg:col-span-6"
           >
-            <figure className="group relative h-[300px] overflow-hidden rounded-2xl border border-[#1E2B48] bg-[#0D1526] shadow-[0_20px_60px_rgba(0,0,0,0.55)] transition-colors hover:border-[#7AB3FF]/40 sm:h-[400px] lg:h-[450px]">
-              {!imgError ? (
-                <img
-                  src={HERO_IMAGE_URL}
-                  alt="Benidictus Siregar sebagai Ale berdiri di samping gerobak mie ayam biru dalam cuplikan film Seporsi Mie Ayam Sebelum Mati"
-                  referrerPolicy="no-referrer"
-                  onError={() => setImgError(true)}
-                  className="h-full w-full object-cover object-[50%_28%] transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                />
-              ) : (
-                <div className="flex h-full min-h-[320px] flex-col items-center justify-center bg-gradient-to-br from-[#0D1526] via-[#131E36] to-[#070B14] p-8 text-center">
-                  <p className="font-editorial text-2xl text-[#EEF3FC]">
-                    Seporsi Mie Ayam Sebelum Mati
-                  </p>
-                  <p className="mt-2 text-xs text-[#94A3C8]">
-                    Cuplikan Adegan Resmi · Ale di Gerobak Mie Ayam
-                  </p>
-                </div>
-              )}
+            <figure
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              className="group relative h-[320px] overflow-hidden rounded-2xl border border-[#1E2B48] bg-[#0D1526] shadow-[0_20px_60px_rgba(0,0,0,0.55)] transition-colors hover:border-[#7AB3FF]/40 sm:h-[400px] lg:h-[450px]"
+            >
+              <AnimatePresence mode="wait">
+                {!imgError ? (
+                  <motion.img
+                    key={activeSlide.id}
+                    src={activeSlide.imageUrl}
+                    alt={activeSlide.alt}
+                    referrerPolicy="no-referrer"
+                    onError={() =>
+                      setFailedSlides((prev) => ({
+                        ...prev,
+                        [activeSlide.id]: true,
+                      }))
+                    }
+                    initial={{ opacity: 0, scale: 1.06 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.7, ease: 'easeOut' }}
+                    className={`h-full w-full object-cover ${activeSlide.objectPosition}`}
+                  />
+                ) : (
+                  <motion.div
+                    key={`fallback-${activeSlide.id}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex h-full min-h-[300px] flex-col items-center justify-center bg-gradient-to-br from-[#0D1526] via-[#131E36] to-[#070B14] p-8 text-center"
+                  >
+                    <p className="font-editorial text-2xl text-[#EEF3FC]">
+                      Seporsi Mie Ayam Sebelum Mati
+                    </p>
+                    <p className="mt-2 text-xs text-[#94A3C8]">
+                      {activeSlide.tag}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070B14]/95 via-[#070B14]/25 to-transparent"
+                className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070B14]/95 via-[#070B14]/30 to-transparent"
               />
-              <figcaption className="absolute right-0 bottom-0 left-0 p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono text-xs text-[#94A3C8]">
-                    ADEGAN FILM · BENIDICTUS SIREGAR SEBAGAI ALE
-                  </p>
-                  <button
-                    type="button"
-                    onClick={cycleQuote}
-                    className="inline-flex items-center gap-1 rounded-full border border-[#2C3F68] bg-[#0D1526]/85 px-2.5 py-1 text-[11px] font-medium text-[#7AB3FF] backdrop-blur-sm transition-colors hover:border-[#7AB3FF] hover:text-[#EEF3FC]"
-                  >
-                    <Sparkles className="h-3 w-3" aria-hidden="true" />
-                    <span>Kutipan {quoteIdx + 1}/{HERO_QUOTES.length}</span>
-                  </button>
+
+              {/* Top slide progress dots */}
+              <div className="absolute top-3.5 right-3.5 left-3.5 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 rounded-full border border-[#1E2B48]/90 bg-[#070B14]/70 px-2.5 py-1 backdrop-blur-sm">
+                  {HERO_SLIDES.map((slide, idx) => {
+                    const active = idx === slideIdx;
+                    return (
+                      <button
+                        key={slide.id}
+                        type="button"
+                        onClick={() => setSlideIdx(idx)}
+                        aria-label={`Tampilkan banner adegan ${idx + 1}`}
+                        aria-pressed={active}
+                        className={`h-1.5 rounded-full transition-all ${
+                          active
+                            ? 'w-5 bg-[#7AB3FF]'
+                            : 'w-1.5 bg-[#94A3C8]/45 hover:bg-[#94A3C8]'
+                        }`}
+                      />
+                    );
+                  })}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={cycleSlide}
+                  className="inline-flex items-center gap-1 rounded-full border border-[#2C3F68] bg-[#0D1526]/85 px-2.5 py-1 text-[11px] font-medium text-[#7AB3FF] backdrop-blur-sm transition-colors hover:border-[#7AB3FF] hover:text-[#EEF3FC]"
+                >
+                  <Sparkles className="h-3 w-3" aria-hidden="true" />
+                  <span>
+                    Adegan {slideIdx + 1}/{HERO_SLIDES.length}
+                  </span>
+                </button>
+              </div>
+
+              <figcaption className="absolute right-0 bottom-0 left-0 p-4 sm:p-5">
                 <AnimatePresence mode="wait">
-                  <motion.p
-                    key={quoteIdx}
-                    initial={{ opacity: 0, y: 6 }}
+                  <motion.div
+                    key={activeSlide.id}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.25 }}
-                    className="mt-1.5 text-sm font-medium text-[#EEF3FC]"
+                    transition={{ duration: 0.3 }}
                   >
-                    {HERO_QUOTES[quoteIdx]}
-                  </motion.p>
+                    <p className="font-mono text-[11px] text-[#7AB3FF] sm:text-xs">
+                      {activeSlide.tag}
+                    </p>
+                    <p className="mt-1 text-xs font-medium leading-relaxed text-[#EEF3FC] sm:text-sm">
+                      {activeSlide.quote}
+                    </p>
+                  </motion.div>
                 </AnimatePresence>
               </figcaption>
             </figure>
