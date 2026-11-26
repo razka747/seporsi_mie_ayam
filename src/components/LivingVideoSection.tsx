@@ -304,9 +304,9 @@ export function LivingVideoSection() {
   return (
     <section
       id="video-hidup"
-      className="border-b border-[#1E2B48] bg-[#0B111F] py-16 lg:py-22"
+      className="border-b border-[#1E2B48] bg-[#0B111F] py-12 sm:py-16 lg:py-22"
     >
-      <div className="mx-auto max-w-[1200px] px-6">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="flex flex-col justify-between gap-6 border-b border-[#1E2B48] pb-8 md:flex-row md:items-end">
           <div>
             <p className="text-xs font-medium text-[#7AB3FF]">
@@ -329,7 +329,7 @@ export function LivingVideoSection() {
           <div
             role="tablist"
             aria-label="Pilih mode tayangan video"
-            className="flex flex-wrap gap-1.5 rounded-lg border border-[#1E2B48] bg-[#0D1526] p-1"
+            className="grid w-full grid-cols-2 gap-1.5 rounded-xl border border-[#1E2B48] bg-[#0D1526] p-1.5 sm:flex sm:w-auto sm:flex-wrap sm:rounded-lg sm:p-1"
           >
             <button
               role="tab"

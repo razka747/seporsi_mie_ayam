@@ -159,8 +159,8 @@ export function InteractiveVisitorSection() {
   const totalComfortVotes = comfortPoll.reduce((sum, item) => sum + item.votes, 0);
 
   return (
-    <section id="interaksi" className="bg-[#070B14] py-16 lg:py-22">
-      <div className="mx-auto max-w-[1200px] px-6">
+    <section id="interaksi" className="bg-[#070B14] py-12 sm:py-16 lg:py-22">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-xs font-medium text-[#7AB3FF]">
             Ruang Interaksi Pengunjung

@@ -62,9 +62,9 @@ export function PlaylistSection({
   return (
     <section
       id="playlist"
-      className="border-b border-[#1E2B48] bg-[#0B111F] py-16 lg:py-22"
+      className="border-b border-[#1E2B48] bg-[#0B111F] py-12 sm:py-16 lg:py-22"
     >
-      <div className="mx-auto max-w-[1200px] px-6">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-xs font-medium text-[#7AB3FF]">
             Playlist Blue Moon · Lagu Asli Durasi Penuh
@@ -93,7 +93,7 @@ export function PlaylistSection({
           className="mt-8 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12"
         >
           {/* Left: Full-Track Official Console + Embedded YouTube Stream */}
-          <div className="flex h-full flex-col justify-between rounded-2xl border border-[#1E2B48] bg-[#0D1526] p-6 lg:col-span-7">
+          <div className="flex h-full flex-col justify-between rounded-2xl border border-[#1E2B48] bg-[#0D1526] p-4 sm:p-6 lg:col-span-7">
             <div>
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                 {/* Tactile Blue Moon Vinyl Disc */}

@@ -8,8 +8,8 @@ export function EssaySection() {
     ESSAY_CHAPTERS.find((chap) => chap.id === activeId) ?? ESSAY_CHAPTERS[0];
 
   return (
-    <section id="esai" className="border-b border-[#1E2B48] bg-[#070B14] py-16 lg:py-22">
-      <div className="mx-auto max-w-[1200px] px-6">
+    <section id="esai" className="border-b border-[#1E2B48] bg-[#070B14] py-12 sm:py-16 lg:py-22">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -32,7 +32,7 @@ export function EssaySection() {
           <div
             role="tablist"
             aria-label="Pilih babak esai Ale"
-            className="flex flex-wrap gap-1.5 rounded-lg border border-[#1E2B48] bg-[#0D1526] p-1"
+            className="grid w-full grid-cols-2 gap-1.5 rounded-xl border border-[#1E2B48] bg-[#0D1526] p-1.5 sm:flex sm:w-auto sm:flex-wrap sm:rounded-lg sm:p-1"
           >
             {ESSAY_CHAPTERS.map((chap) => {
               const selected = chap.id === current.id;

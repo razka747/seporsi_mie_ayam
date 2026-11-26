@@ -106,7 +106,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-[#EEF3FC]">
+    <div className="min-h-screen overflow-x-clip bg-[#070B14] text-[#EEF3FC]">
       <Header isPlaying={isPlaying} onToggleAudio={handleHeaderToggleAudio} />
       <main>
         <HeroSection

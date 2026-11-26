@@ -2,6 +2,7 @@ import { ArrowDown, Disc3, Play, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { HERO_IMAGE_URL } from '../data/filmContent';
+import { scrollToSection } from '../utils/scrollToSection';
 
 interface HeroSectionProps {
   isPlaying: boolean;
@@ -75,7 +76,7 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
         ))}
       </div>
 
-      <div className="relative mx-auto max-w-[1200px] px-6 pt-12 pb-12 lg:pt-16 lg:pb-14">
+      <div className="relative mx-auto max-w-[1200px] px-4 pt-8 pb-10 sm:px-6 lg:pt-16 lg:pb-14">
         <div className="grid grid-cols-1 items-stretch gap-10 lg:grid-cols-12 lg:gap-12">
           <div className="flex flex-col justify-between lg:col-span-6">
             <div>
@@ -122,14 +123,14 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.24 }}
-              className="mt-9 flex flex-wrap items-center gap-4"
+              className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4"
             >
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={onPlayLetDown}
-                className="inline-flex min-h-[44px] items-center gap-2.5 rounded-lg bg-[#7AB3FF] px-5 py-2.5 text-sm font-semibold text-[#070B14] whitespace-nowrap shrink-0 shadow-[0_0_24px_rgba(122,179,255,0.28)] transition-colors hover:bg-[#9CC7FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
+                className="inline-flex min-h-[44px] w-full items-center justify-center gap-2.5 rounded-lg bg-[#7AB3FF] px-5 py-2.5 text-sm font-semibold text-[#070B14] whitespace-nowrap shrink-0 shadow-[0_0_24px_rgba(122,179,255,0.28)] transition-colors hover:bg-[#9CC7FF] sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
               >
                 {isPlaying ? (
                   <Disc3 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -145,9 +146,13 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
 
               <motion.a
                 href="#esai"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection('esai');
+                }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-[#243456] bg-[#0D1526] px-5 py-2.5 text-sm font-medium text-[#EEF3FC] whitespace-nowrap shrink-0 transition-colors hover:border-[#7AB3FF]/50 hover:bg-[#131E36] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
+                className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-[#243456] bg-[#0D1526] px-5 py-2.5 text-sm font-medium text-[#EEF3FC] whitespace-nowrap shrink-0 transition-colors hover:border-[#7AB3FF]/50 hover:bg-[#131E36] sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
               >
                 <span>Baca Esai Film</span>
                 <ArrowDown className="h-4 w-4 text-[#94A3C8]" aria-hidden="true" />
@@ -161,7 +166,7 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
             transition={{ duration: 0.65, delay: 0.14 }}
             className="lg:col-span-6"
           >
-            <figure className="group relative h-[360px] overflow-hidden rounded-2xl border border-[#1E2B48] bg-[#0D1526] shadow-[0_20px_60px_rgba(0,0,0,0.55)] transition-colors hover:border-[#7AB3FF]/40 sm:h-[420px] lg:h-[450px]">
+            <figure className="group relative h-[300px] overflow-hidden rounded-2xl border border-[#1E2B48] bg-[#0D1526] shadow-[0_20px_60px_rgba(0,0,0,0.55)] transition-colors hover:border-[#7AB3FF]/40 sm:h-[400px] lg:h-[450px]">
               {!imgError ? (
                 <img
                   src={HERO_IMAGE_URL}
@@ -216,9 +221,9 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
         </div>
 
         {/* Keterangan Film Resmi */}
-        <div className="mt-12 border-t border-[#1E2B48] pt-8">
+        <div className="mt-10 border-t border-[#1E2B48] pt-7 sm:mt-12 sm:pt-8">
           <p className="text-xs font-medium text-[#7AB3FF]">Keterangan Film</p>
-          <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+          <dl className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             {[
               { dt: 'Adaptasi & Penulis', dd: 'Novel Brian Khrisna' },
               { dt: 'Sutradara & Produksi', dd: 'Kuntz Agus · Sinergi' },
@@ -231,10 +236,10 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.4, delay: idx * 0.06 }}
-                className="rounded-xl border border-[#1E2B48]/70 bg-[#0D1526]/50 px-4 py-3 transition-colors hover:border-[#7AB3FF]/40 hover:bg-[#0D1526]"
+                className="rounded-xl border border-[#1E2B48]/70 bg-[#0D1526]/50 px-3.5 py-3 transition-colors hover:border-[#7AB3FF]/40 hover:bg-[#0D1526] sm:px-4"
               >
-                <dt className="text-xs text-[#94A3C8]">{item.dt}</dt>
-                <dd className="mt-1 font-editorial text-xl font-semibold text-[#EEF3FC]">
+                <dt className="text-[11px] text-[#94A3C8] sm:text-xs">{item.dt}</dt>
+                <dd className="mt-1 font-editorial text-lg font-semibold leading-snug text-[#EEF3FC] sm:text-xl">
                   {item.dd}
                 </dd>
               </motion.div>
@@ -245,7 +250,7 @@ export function HeroSection({ isPlaying, onPlayLetDown }: HeroSectionProps) {
 
       {/* Ringkasan Keterangan & Jajaran Pemeran Film */}
       <div className="relative border-t border-[#1E2B48] bg-[#0B111F] py-4">
-        <div className="mx-auto flex max-w-[1200px] flex-col justify-between gap-3 px-6 text-xs leading-relaxed text-[#B6C4E0] md:flex-row md:items-center">
+        <div className="mx-auto flex max-w-[1200px] flex-col justify-between gap-3 px-4 text-xs leading-relaxed text-[#B6C4E0] sm:px-6 md:flex-row md:items-center">
           <p className="max-w-3xl">
             <span className="font-semibold text-[#EEF3FC]">Sinopsis Film:</span>{' '}
             Tepat di ulang tahun ke-37, Ale berniat mengakhiri hidupnya namun

@@ -49,9 +49,9 @@ export function GallerySection() {
   return (
     <section
       id="galeri"
-      className="border-b border-[#1E2B48] bg-[#070B14] py-16 lg:py-22"
+      className="border-b border-[#1E2B48] bg-[#070B14] py-12 sm:py-16 lg:py-22"
     >
-      <div className="mx-auto max-w-[1200px] px-6">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="flex flex-col justify-between gap-6 border-b border-[#1E2B48] pb-8 md:flex-row md:items-end">
           <div>
             <p className="text-xs font-medium text-[#7AB3FF]">
@@ -68,7 +68,7 @@ export function GallerySection() {
           <div
             role="tablist"
             aria-label="Filter foto adegan berdasarkan suasana"
-            className="flex flex-wrap gap-1.5 rounded-lg border border-[#1E2B48] bg-[#0D1526] p-1"
+            className="grid w-full grid-cols-2 gap-1.5 rounded-xl border border-[#1E2B48] bg-[#0D1526] p-1.5 sm:flex sm:w-auto sm:flex-wrap sm:rounded-lg sm:p-1"
           >
             {CATEGORIES.map((category) => {
               const active = selectedCategory === category;
@@ -124,7 +124,7 @@ export function GallerySection() {
                   type="button"
                   onClick={() => setLightboxPhotoId(photo.id)}
                   aria-label={`Buka foto adegan: ${photo.title}`}
-                  className="relative h-[240px] w-full overflow-hidden text-left sm:h-[260px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
+                  className="relative h-[210px] w-full overflow-hidden text-left sm:h-[260px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF]"
                 >
                   {!imgFailed ? (
                     <img
@@ -200,7 +200,7 @@ export function GallerySection() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setLightboxPhotoId(null);
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#04070E]/92 p-4 backdrop-blur-md md:p-8"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#04070E]/92 p-3 backdrop-blur-md sm:p-6 md:p-8"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 12 }}

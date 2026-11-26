@@ -44,9 +44,9 @@ export function TeamSection() {
   return (
     <section
       id="tim-pembuat"
-      className="border-t border-[#1E2B48] bg-[#0B111F] py-16 lg:py-22"
+      className="border-t border-[#1E2B48] bg-[#0B111F] py-12 sm:py-16 lg:py-22"
     >
-      <div className="mx-auto max-w-[1200px] px-6">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-xs font-medium text-[#7AB3FF]">
             Di Balik Layar · Kelompok 7 Kreator
