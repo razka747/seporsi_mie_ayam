@@ -1,4 +1,4 @@
-import { Check, Heart, Send } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Heart, Send } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
@@ -20,6 +20,7 @@ const NOTES_STORAGE_KEY = 'bluemoon_visitor_notes_v1';
 const LIKES_STORAGE_KEY = 'bluemoon_liked_notes_v1';
 const SCENE_POLL_KEY = 'bluemoon_scene_poll_v1';
 const COMFORT_POLL_KEY = 'bluemoon_comfort_poll_v1';
+const NOTES_PER_SLIDE = 5;
 
 const MOOD_OPTIONS: NoteMood[] = [
   'Hangat · Kaldu Ayam',
@@ -54,6 +55,7 @@ export function InteractiveVisitorSection() {
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState<{ author?: string; message?: string }>({});
   const [submitNotice, setSubmitNotice] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   // Interactive Polls state
   const [scenePoll, setScenePoll] = useState<PollOption[]>(() =>
@@ -115,6 +117,7 @@ export function InteractiveVisitorSection() {
     setErrors({});
     const updated = addVisitorNote(notes, check.sanitized, 'Baru saja');
     setNotes(updated);
+    setCurrentSlide(0);
     setAuthor('');
     setMessage('');
     setSubmitNotice('Pesanmu telah ditempelkan di meja catatan untuk Ale.');
@@ -157,6 +160,13 @@ export function InteractiveVisitorSection() {
 
   const comfortPollResults = calculatePollPercentages(comfortPoll);
   const totalComfortVotes = comfortPoll.reduce((sum, item) => sum + item.votes, 0);
+
+  const totalSlides = Math.max(1, Math.ceil(notes.length / NOTES_PER_SLIDE));
+  const safeSlide = Math.min(currentSlide, totalSlides - 1);
+  const visibleNotes = notes.slice(
+    safeSlide * NOTES_PER_SLIDE,
+    (safeSlide + 1) * NOTES_PER_SLIDE,
+  );
 
   return (
     <section id="interaksi" className="bg-[#070B14] py-12 sm:py-16 lg:py-22">
@@ -286,73 +296,133 @@ export function InteractiveVisitorSection() {
 
           {/* Visitor Notes Wall */}
           <div className="lg:col-span-7">
-            <div className="flex items-center justify-between border-b border-[#1E2B48] pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1E2B48] pb-4">
               <h3 className="font-editorial text-2xl font-semibold text-[#EEF3FC]">
                 Dinding Catatan Penonton
               </h3>
-              <span className="font-mono text-xs text-[#94A3C8] tabular-nums">
-                {notes.length} catatan tersimpan
-              </span>
+              <div className="flex items-center gap-2.5 font-mono text-xs text-[#94A3C8] tabular-nums">
+                {totalSlides > 1 && (
+                  <span className="rounded-md border border-[#1E2B48] bg-[#0D1526] px-2 py-0.5 text-[#7AB3FF]">
+                    Slide {safeSlide + 1}/{totalSlides}
+                  </span>
+                )}
+                <span>{notes.length} catatan tersimpan</span>
+              </div>
             </div>
 
-            <ul
-              data-testid="visitor-notes-list"
-              className="mt-5 space-y-4"
-            >
-              <AnimatePresence initial={false}>
-              {notes.map((note) => {
-                const isLiked = likedIds.includes(note.id);
-                return (
-                  <motion.li
-                    layout
-                    key={note.id}
-                    initial={{ opacity: 0, y: -12, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.25 }}
-                    className="rounded-xl border border-[#1E2B48] bg-[#0D1526] p-5 transition-colors hover:border-[#2C3F68]"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-[#94A3C8]">
-                        <span className="font-semibold text-[#EEF3FC]">
-                          {note.author}
-                        </span>
-                        <span aria-hidden="true">·</span>
-                        <span>{note.mood}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{note.createdAt}</span>
+            <AnimatePresence mode="wait">
+              <motion.ul
+                key={`notes-slide-${safeSlide}`}
+                data-testid="visitor-notes-list"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.24, ease: 'easeOut' }}
+                className="mt-5 space-y-4"
+              >
+                {visibleNotes.map((note) => {
+                  const isLiked = likedIds.includes(note.id);
+                  return (
+                    <motion.li
+                      layout
+                      key={note.id}
+                      initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.22 }}
+                      className="rounded-xl border border-[#1E2B48] bg-[#0D1526] p-4 transition-colors hover:border-[#2C3F68] sm:p-5"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-[#94A3C8]">
+                          <span className="font-semibold text-[#EEF3FC]">
+                            {note.author}
+                          </span>
+                          <span aria-hidden="true">·</span>
+                          <span>{note.mood}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>{note.createdAt}</span>
+                        </div>
+
+                        <motion.button
+                          type="button"
+                          whileTap={{ scale: 0.86 }}
+                          onClick={() => handleHeartToggle(note.id)}
+                          aria-pressed={isLiked}
+                          aria-label={`Sukai catatan dari ${note.author}`}
+                          className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
+                            isLiked
+                              ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
+                              : 'border-[#1E2B48] bg-[#070B14] text-[#94A3C8] hover:text-[#EEF3FC]'
+                          }`}
+                        >
+                          <Heart
+                            className={`h-3.5 w-3.5 transition-transform ${
+                              isLiked ? 'scale-110 fill-[#7AB3FF] text-[#7AB3FF]' : ''
+                            }`}
+                            aria-hidden="true"
+                          />
+                          <span>{note.hearts}</span>
+                        </motion.button>
                       </div>
 
-                      <motion.button
+                      <p className="mt-3 text-sm leading-relaxed text-[#C5D2EA]">
+                        {note.message}
+                      </p>
+                    </motion.li>
+                  );
+                })}
+              </motion.ul>
+            </AnimatePresence>
+
+            {totalSlides > 1 && (
+              <div
+                aria-label="Navigasi slide catatan pengunjung"
+                className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#1E2B48] bg-[#0D1526] px-3.5 py-2.5"
+              >
+                <button
+                  type="button"
+                  onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
+                  disabled={safeSlide === 0}
+                  className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-[#243456] bg-[#131E36] px-3 py-1.5 text-xs font-medium text-[#EEF3FC] transition-colors hover:bg-[#1D2D4F] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>Sebelumnya</span>
+                </button>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {Array.from({ length: totalSlides }, (_, idx) => {
+                    const active = idx === safeSlide;
+                    return (
+                      <button
+                        key={idx}
                         type="button"
-                        whileTap={{ scale: 0.86 }}
-                        onClick={() => handleHeartToggle(note.id)}
-                        aria-pressed={isLiked}
-                        aria-label={`Sukai catatan dari ${note.author}`}
-                        className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7AB3FF] ${
-                          isLiked
-                            ? 'border-[#7AB3FF]/60 bg-[#1D2D4F] text-[#EEF3FC]'
-                            : 'border-[#1E2B48] bg-[#070B14] text-[#94A3C8] hover:text-[#EEF3FC]'
+                        onClick={() => setCurrentSlide(idx)}
+                        aria-label={`Buka slide catatan ${idx + 1}`}
+                        aria-current={active ? 'page' : undefined}
+                        className={`inline-flex h-8 min-w-[32px] items-center justify-center rounded-lg border px-2 font-mono text-xs font-medium tabular-nums transition-colors ${
+                          active
+                            ? 'border-[#7AB3FF]/70 bg-[#7AB3FF] text-[#070B14]'
+                            : 'border-[#1E2B48] bg-[#070B14] text-[#94A3C8] hover:border-[#2C3F68] hover:text-[#EEF3FC]'
                         }`}
                       >
-                        <Heart
-                          className={`h-3.5 w-3.5 transition-transform ${
-                            isLiked ? 'scale-110 fill-[#7AB3FF] text-[#7AB3FF]' : ''
-                          }`}
-                          aria-hidden="true"
-                        />
-                        <span>{note.hearts}</span>
-                      </motion.button>
-                    </div>
+                        {idx + 1}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                    <p className="mt-3 text-sm leading-relaxed text-[#C5D2EA]">
-                      {note.message}
-                    </p>
-                  </motion.li>
-                );
-              })}
-              </AnimatePresence>
-            </ul>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentSlide((prev) => Math.min(totalSlides - 1, prev + 1))
+                  }
+                  disabled={safeSlide >= totalSlides - 1}
+                  className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-[#243456] bg-[#131E36] px-3 py-1.5 text-xs font-medium text-[#EEF3FC] transition-colors hover:bg-[#1D2D4F] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <span>Berikutnya</span>
+                  <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
