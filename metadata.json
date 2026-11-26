@@ -1,0 +1,6 @@
+{
+  "name": "Blue Moon: Seporsi Mie Ayam Sebelum Mati",
+  "description": "Blog editorial sinematik bertema Blue Moon tentang film Seporsi Mie Ayam Sebelum Mati, galeri foto, video hidup, interaksi pengunjung, dan playlist lagu Let Down kisah Ale.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

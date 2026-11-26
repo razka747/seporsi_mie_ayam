@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-moon-canvas: #070b14;
+  --color-moon-surface: #0d1526;
+  --color-moon-elevated: #131e36;
+  --color-moon-ink: #eef3fc;
+  --color-moon-muted: #94a3c8;
+  --color-moon-accent: #7ab3ff;
+  --color-moon-broth: #e5a95e;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: #070b14;
+  color: #eef3fc;
+}
+
+section[id] {
+  scroll-margin-top: 76px;
+}
+
+.font-editorial {
+  font-family: var(--font-serif);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes blue-moon-marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: blue-moon-marquee 38s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-marquee {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
