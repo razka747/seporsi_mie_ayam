@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   addVisitorNote,
   calculatePollPercentages,
+  detectBlockedContent,
+  filterCleanVisitorNotes,
   filterPhotosByScene,
   formatAudioTime,
   toggleNoteHeart,
@@ -118,4 +120,50 @@ test('formatAudioTime formats seconds cleanly into m:ss', () => {
   assert.equal(formatAudioTime(65), '1:05');
   assert.equal(formatAudioTime(299), '4:59');
   assert.equal(formatAudioTime(-4), '0:00');
+});
+
+test('detectBlockedContent and filterCleanVisitorNotes block and remove 18+, racist, and SARA comments', () => {
+  assert.equal(detectBlockedContent('Film ini sangat menyentuh hati.'), null);
+  assert.equal(detectBlockedContent('Link b0k3p 18+ di sini'), '18+');
+  assert.equal(detectBlockedContent('Dasar rasis dan menghina sara'), 'rasis-sara');
+
+  const adultSubmit = validateVisitorNote({
+    author: 'Anonim',
+    mood: 'Sunyi · Gerimis',
+    message: 'Ayo nonton film porno bareng malam ini',
+  });
+  assert.equal(adultSubmit.valid, false);
+  assert.ok(adultSubmit.errors.message);
+
+  const mixedNotes: VisitorNote[] = [
+    {
+      id: 'clean-1',
+      author: 'Nadia',
+      mood: 'Hangat · Kaldu Ayam',
+      message: 'Pelukan ibu dan Ale bikin terharu.',
+      createdAt: 'Baru saja',
+      hearts: 3,
+    },
+    {
+      id: 'bad-18',
+      author: 'Spam',
+      mood: 'Sunyi · Gerimis',
+      message: 'Konten bokep gratis cek profil.',
+      createdAt: 'Baru saja',
+      hearts: 0,
+    },
+    {
+      id: 'bad-sara',
+      author: 'Troll',
+      mood: 'Sunyi · Gerimis',
+      message: 'Komentar rasis dan ujaran sara.',
+      createdAt: 'Baru saja',
+      hearts: 0,
+    },
+  ];
+
+  const cleaned = filterCleanVisitorNotes(mixedNotes);
+  assert.equal(cleaned.removedCount, 2);
+  assert.equal(cleaned.cleanNotes.length, 1);
+  assert.equal(cleaned.cleanNotes[0].id, 'clean-1');
 });

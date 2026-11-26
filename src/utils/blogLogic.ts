@@ -63,6 +63,69 @@ export function filterPhotosByScene(
   return photos.filter((photo) => photo.category === category);
 }
 
+export type ModerationViolation = '18+' | 'rasis-sara';
+
+const ADULT_18_PATTERNS: RegExp[] = [
+  /\b18\+\b/i,
+  /\b(bokep|porno|porn|pornografi|nsfw|xxx|hentai|jav|onlyfans|vcs|open\s*bo)\b/i,
+  /\b(ngentot|ngewe|memek|kontol|pepek|coli|colmek|masturbasi|mesum|cabul|bugil|telanjang|toket|tetek|pelacur|lonte|psk|perek|gigolo)\b/i,
+  /\b(sex|seks)\b/i,
+];
+
+const RACIST_SARA_PATTERNS: RegExp[] = [
+  /\b(rasis|rasisme|sara|penistaan|hina\s*agama)\b/i,
+  /\b(nigger|nigga|chink|negro|kafir|murtad|aseng|antek|kadrun|cebong|kampret|pribumi\s*asli|non\s*pribumi)\b/i,
+  /\b(cina\s*(bangsat|anjing|babi|kafir|tolol)|dasar\s*(cina|jawa|sunda|batak|papua|arab|yahudi|kafir))\b/i,
+];
+
+function normalizeForModeration(raw: string): string {
+  return raw
+    .toLowerCase()
+    .replace(/[@4]/g, 'a')
+    .replace(/[3]/g, 'e')
+    .replace(/[1!|]/g, 'i')
+    .replace(/[0]/g, 'o')
+    .replace(/[5$]/g, 's')
+    .replace(/[7]/g, 't')
+    .replace(/[._*`~-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function detectBlockedContent(text: string): ModerationViolation | null {
+  const normalized = normalizeForModeration(text);
+  const rawLower = text.toLowerCase();
+
+  for (const pattern of ADULT_18_PATTERNS) {
+    if (pattern.test(rawLower) || pattern.test(normalized)) {
+      return '18+';
+    }
+  }
+
+  for (const pattern of RACIST_SARA_PATTERNS) {
+    if (pattern.test(rawLower) || pattern.test(normalized)) {
+      return 'rasis-sara';
+    }
+  }
+
+  return null;
+}
+
+export function filterCleanVisitorNotes(notes: VisitorNote[]): {
+  cleanNotes: VisitorNote[];
+  removedCount: number;
+} {
+  const cleanNotes = notes.filter(
+    (note) =>
+      detectBlockedContent(note.author) === null &&
+      detectBlockedContent(note.message) === null,
+  );
+  return {
+    cleanNotes,
+    removedCount: notes.length - cleanNotes.length,
+  };
+}
+
 export function validateVisitorNote(input: NoteInput): NoteValidationResult {
   const author = input.author.trim();
   const message = input.message.trim();
@@ -72,12 +135,24 @@ export function validateVisitorNote(input: NoteInput): NoteValidationResult {
     errors.author = 'Nama minimal 2 karakter.';
   } else if (author.length > 48) {
     errors.author = 'Nama maksimal 48 karakter.';
+  } else if (detectBlockedContent(author) !== null) {
+    errors.author =
+      'Nama mengandung unsur 18+, rasis, atau SARA dan otomatis dihapus.';
   }
 
   if (message.length < 8) {
     errors.message = 'Tulis pesan minimal 8 karakter untuk Ale atau pembaca lain.';
   } else if (message.length > 360) {
     errors.message = 'Pesan maksimal 360 karakter.';
+  } else {
+    const violation = detectBlockedContent(message);
+    if (violation === '18+') {
+      errors.message =
+        'Komentar terdeteksi mengandung konten 18+ dan otomatis dihapus oleh sistem perlindungan.';
+    } else if (violation === 'rasis-sara') {
+      errors.message =
+        'Komentar terdeteksi mengandung unsur rasis atau SARA dan otomatis dihapus oleh sistem perlindungan.';
+    }
   }
 
   return {

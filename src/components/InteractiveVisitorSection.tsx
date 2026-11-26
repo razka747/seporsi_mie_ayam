@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, ChevronRight, Heart, Send } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Heart, Send, ShieldCheck } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState, type FormEvent } from 'react';
 import {
@@ -9,6 +9,8 @@ import {
 import {
   addVisitorNote,
   calculatePollPercentages,
+  detectBlockedContent,
+  filterCleanVisitorNotes,
   toggleNoteHeart,
   validateVisitorNote,
   type NoteMood,
@@ -43,9 +45,10 @@ function loadJson<T>(key: string, fallback: T): T {
 }
 
 export function InteractiveVisitorSection() {
-  const [notes, setNotes] = useState<VisitorNote[]>(() =>
-    loadJson(NOTES_STORAGE_KEY, INITIAL_VISITOR_NOTES),
-  );
+  const [notes, setNotes] = useState<VisitorNote[]>(() => {
+    const loaded = loadJson(NOTES_STORAGE_KEY, INITIAL_VISITOR_NOTES);
+    return filterCleanVisitorNotes(loaded).cleanNotes;
+  });
   const [likedIds, setLikedIds] = useState<string[]>(() =>
     loadJson(LIKES_STORAGE_KEY, []),
   );
@@ -111,6 +114,12 @@ export function InteractiveVisitorSection() {
     if (!check.valid) {
       setErrors(check.errors);
       setSubmitNotice('');
+      if (detectBlockedContent(author) !== null) {
+        setAuthor('');
+      }
+      if (detectBlockedContent(message) !== null) {
+        setMessage('');
+      }
       return;
     }
 
@@ -281,6 +290,13 @@ export function InteractiveVisitorSection() {
                 <Send className="h-4 w-4" aria-hidden="true" />
                 <span>Kirim Pesan untuk Ale</span>
               </button>
+
+              <p className="flex items-center gap-1.5 text-[11px] text-[#94A3C8]">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[#7AB3FF]" aria-hidden="true" />
+                <span>
+                  Perlindungan otomatis aktif: komentar 18+, rasis, atau SARA akan otomatis dihapus.
+                </span>
+              </p>
 
               {submitNotice && (
                 <p
